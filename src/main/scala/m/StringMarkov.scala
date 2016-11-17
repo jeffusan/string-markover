@@ -61,7 +61,7 @@ class StringMarkov(inputFile: String) {
   }
 
   def markovChain(resultCount: Int, startWord: String): String = {
-    generateMessages(startWord, resultCount, frequencyTable)
+    generateMessages(startWord, resultCount, frequencyTable, Seq(startWord))
   }
 
 }

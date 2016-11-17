@@ -11,11 +11,17 @@ class StringMarkov(inputFile: String) {
 
   private val input = fileToWordSeq(inputFile)
   private val frequencyTable = buildFrequencyTable(input)
-  val r = scala.util.Random
+  private val r = scala.util.Random
   type FrequencyTable = Map[String, Distribution[String]]
 
-  private[m] def fileToWordSeq(filePath: String): Seq[String] = Source.fromFile(new File(filePath)).getLines.flatMap(l => l.split(" ")).toSeq
+  private[m] def fileToWordSeq(filePath: String): Seq[String] = {
+    Source.fromFile(new File(filePath)).getLines.flatMap(l => l.split(" ")).toSeq
+  }
 
+  /*
+   * Create a map representing a frequency table. It contains a key representing a word,
+   * whose value is a distribution of words that follow within the input corpus.
+   */
   private[m] def buildFrequencyTable(input: Seq[String]): FrequencyTable = {
     val dists = for (key <- input.groupBy(identity).keys) yield {
       val nextWords: Seq[String] = input.sliding(2).filter(y => y.head == key).map(i => i(1)).toSeq
@@ -24,6 +30,11 @@ class StringMarkov(inputFile: String) {
     dists.toMap
   }
 
+  /*
+   * Get a sample word from the distribution.
+   * Note that generating the distribution is a bit rough, hence the try/catch.
+   * In the event that the distribution has no values, get a random word and try again.
+   */
   private[m] def getWordFromDistribution(distribution: Distribution[String]): String = try {
     distribution.sample(1).head
   } catch {
@@ -32,11 +43,8 @@ class StringMarkov(inputFile: String) {
       getNextWord(randomWord, frequencyTable)
   }
 
-  private[m] def getNextWord(lastWord: String, frequencyTable: FrequencyTable): String = frequencyTable.get(lastWord) match {
-    case None =>
-      println("this shouldn't happen")
-      ""
-    case Some(dist) => getWordFromDistribution(dist)
+  private[m] def getNextWord(lastWord: String, frequencyTable: FrequencyTable): String = {
+    getWordFromDistribution(frequencyTable.get(lastWord).get)
   }
 
   private[m] def generateMessages(word: String, count: Int, frequencyTable: FrequencyTable, result: Seq[String] = Seq.empty): String = count match {
@@ -48,6 +56,8 @@ class StringMarkov(inputFile: String) {
 
   private[m] def randomWord: String = input(r.nextInt(input.size - 1))
 
-  def markovChain(resultCount: Int): String = generateMessages(randomWord, resultCount, frequencyTable)
+  def markovChain(resultCount: Int): String = {
+    generateMessages(randomWord, resultCount, frequencyTable)
+  }
 
 }

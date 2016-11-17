@@ -60,4 +60,8 @@ class StringMarkov(inputFile: String) {
     generateMessages(randomWord, resultCount, frequencyTable)
   }
 
+  def markovChain(resultCount: Int, startWord: String): String = {
+    generateMessages(startWord, resultCount, frequencyTable)
+  }
+
 }

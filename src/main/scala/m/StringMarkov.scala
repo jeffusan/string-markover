@@ -15,7 +15,7 @@ class StringMarkov(inputFile: String) {
   type FrequencyTable = Map[String, Distribution[String]]
 
   private[m] def fileToWordSeq(filePath: String): Seq[String] = {
-    Source.fromFile(new File(filePath)).getLines.flatMap(l => l.split(" ")).toSeq
+    Source.fromFile(new File(filePath)).getLines.flatMap(l => l.split(" ")).map(a => a.toUpperCase).toSeq
   }
 
   /*
@@ -61,7 +61,7 @@ class StringMarkov(inputFile: String) {
   }
 
   def markovChain(resultCount: Int, startWord: String): String = {
-    generateMessages(startWord, resultCount, frequencyTable, Seq(startWord))
+    generateMessages(startWord.toUpperCase, resultCount, frequencyTable, Seq(startWord.toUpperCase))
   }
 
 }

@@ -6,6 +6,7 @@ import probability_monad._
 import probability_monad.Distribution._
 
 import scala.io.Source
+import scala.util.Try
 
 class StringMarkov(inputFile: String) {
 
@@ -35,22 +36,21 @@ class StringMarkov(inputFile: String) {
    * Note that generating the distribution is a bit rough, hence the try/catch.
    * In the event that the distribution has no values, get a random word and try again.
    */
-  private[m] def getWordFromDistribution(distribution: Distribution[String]): String = try {
-    distribution.sample(1).head
-  } catch {
-    case i: IllegalArgumentException =>
-      // try again
-      getNextWord(randomWord, frequencyTable)
-  }
-
-  private[m] def getNextWord(lastWord: String, frequencyTable: FrequencyTable): String = {
-    getWordFromDistribution(frequencyTable.get(lastWord).get)
+  private[m] def getNextWord(lastWord: String, frequencyTable: FrequencyTable): Try[String] = {
+    Try({
+      val distribution = frequencyTable.get(lastWord).get
+      distribution.sample(1).head
+    }).recoverWith({
+      case i: IllegalArgumentException =>
+        // try again
+        getNextWord(randomWord, frequencyTable)
+    })
   }
 
   private[m] def generateMessages(word: String, count: Int, frequencyTable: FrequencyTable, result: Seq[String] = Seq.empty): String = count match {
     case 0 => result.mkString(" ")
     case _ =>
-      val nextWord = getNextWord(word, frequencyTable)
+      val nextWord = getNextWord(word, frequencyTable).get//This seems reasonable to Throw the exception here and halt the program.
       generateMessages(nextWord, count - 1, frequencyTable, result :+ nextWord)
   }
 
